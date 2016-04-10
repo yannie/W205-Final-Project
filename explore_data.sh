@@ -1,4 +1,4 @@
-wget https://data.sfgov.org/api/views/tmnf-yvry/rows.csv?accessType=DOWNLOAD
+wget -O crimedata.csv https://data.sfgov.org/api/views/tmnf-yvry/rows.csv?accessType=DOWNLOAD
 hdfs dfs -mkdir /user/w205/crimenew
 hdfs dfs -put crimedata.csv /user/w205/crimenew
 
