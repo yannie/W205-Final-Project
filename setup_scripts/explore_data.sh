@@ -18,7 +18,7 @@ echo "Loading data into HDFS."
 hdfs dfs -mkdir /user/w205/sfcrime
 hdfs dfs -put ../data/sf_crime_data.csv /user/w205/sfcrime
 hdfs dfs -mkdir /user/w205/sfbike
-hdfs dfs -put ../data/sf_bike_parking_data.csv /user/w205/sfbike
+hdfs dfs -put ../data/sf_bike_data.csv /user/w205/sfbike
 
 echo "Creating Hive tables."
 hive -f create_tables.sql

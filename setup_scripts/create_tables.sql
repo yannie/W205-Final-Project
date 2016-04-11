@@ -32,16 +32,15 @@ CREATE EXTERNAL TABLE sf_bike_parking_base (
   placement string,
   mo_installed int,
   yr_installed int,
-  coordinates string
+  X int,
+  Y int
 ) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES ( "separatorChar" = ",",
 "quoteChar" = '"',
 "escapeChar" = '\\'
 )
 STORED AS TEXTFILE
-LOCATION '/user/w205/sfbike'
-tblproperties ("skip.header.line.count"="1");
-
+LOCATION '/user/w205/sfbike';
 
 DROP TABLE COUNT_CRIME;
 CREATE TABLE COUNT_CRIME AS
