@@ -1,3 +1,32 @@
+DROP TABLE crime_table;
+CREATE EXTERNAL TABLE crime_table (
+  IncidntNum int,
+  Category string,
+  Descript string,
+  DayOfWeek string,
+  Date date,
+  Time int,
+  PdDistrict string,
+  Resolution string,
+  Address string,
+  Y int,
+  X int,
+  Location string,
+  PdId int
+) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ( "separatorChar" = ",",
+"quoteChar" = '"',
+"escapeChar" = '\\'
+)
+STORED AS TEXTFILE
+LOCATION '/user/w205/crimenew';
+
+
+DROP TABLE IMP_CAT;
+CREATE TABLE IMP_CAT AS
+SELECT CATEGORY, DESCRIPT, X, Y FROM CRIME_TABLE
+WHERE CATEGORY = 'VEHICLE THEFT' OR CATEGORY = 'LARCENY/THEFT'
+OR CATEGORY = 'ROBBERY';
 
 DROP TABLE LOC_MULT;
 CREATE TABLE LOC_MULT AS
