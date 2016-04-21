@@ -5,7 +5,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.schema import *
 import os
 
-engine = create_engine('hive://w205@54.173.20.8:10000/default')
+engine = create_engine('hive://w205@54.209.246.57:10000/default')
 app = Flask(__name__)
 api = Api(app)
 
@@ -90,21 +90,32 @@ class BikeStops3(Resource):
              "+ COS({0}*pi()/180) * COS(abs(x)*pi()/180) "
              "* POWER(SIN(({1} - y)*pi()/180/2),2))) AS distance "
              "FROM sf_bike_parking_base ) distances "
-             "WHERE distance <= 1 "
-             "ORDER BY distance "
-             "LIMIT 5").format(lat, long)
+             "WHERE distance <= 0.25 ").format(lat, long)
     print query
     query_result = conn.execute(query)
     distances = {}
     for i in query_result.cursor.fetchall():
-      distances[i[0]] = i[1]
-    query_scores = ("SELECT address, score FROM roiana_scores WHERE address IN (%s)" % distances.keys())
+      distances[str(i[0])] = float(i[1])
+    query_scores = ("SELECT address, score FROM roiana_scores WHERE address IN (%s)" % str(distances.keys()).strip('[]'))
     print query_scores
     query_scores_result = conn.execute(query_scores)
     scores = {}
     for i in query_scores_result.cursor.fetchall():
-      scores[i[0]] = i[1]
-    result = {"address, distance, score": [(address, distances[address], scores[address]) for address in distances.keys()]}
+      scores[str(i[0])] = float(i[1])
+    # Populate missing scores to 0.
+    for address in distances.keys():
+      if address not in scores.keys():
+        scores[address] = 0
+    # Sort locations by score.
+    sorted_scores = sorted(scores.items(), key=lambda x:x[1])
+    results = []
+    # Get top 5 locations ordered by score.
+    for i in range(6):
+      address = sorted_scores[i][0]
+      score = sorted_scores[i][1]
+      distance = distances[address]
+      results.append(("Address: {0}".format(address), "Distance: {0:.2f}".format(distances[address]), "Score: {0:.2f}".format(scores[address])))
+    result = {"Recommended spots": results}
     print result
     conn.close()
     return result
