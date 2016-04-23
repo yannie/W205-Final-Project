@@ -85,36 +85,40 @@ class BikeStops3(Resource):
     print "lat: {0}, long: {1}".format(lat,long)
 
     conn = engine.connect()
-    query = ("SELECT * FROM (SELECT address, "
-             "3956*2*ASIN(SQRT(POWER(SIN(({0} - abs(x)) * pi()/180/2), 2) "
-             "+ COS({0}*pi()/180) * COS(abs(x)*pi()/180) "
-             "* POWER(SIN(({1} - y)*pi()/180/2),2))) AS distance "
-             "FROM sf_bike_parking_base ) distances "
+    query = ("SELECT * FROM "
+	     "  (SELECT address, location_name, "
+             "     3956*2*ASIN(SQRT(POWER(SIN(({0} - abs(x)) * pi()/180/2), 2) "
+             "       + COS({0}*pi()/180) * COS(abs(x)*pi()/180) "
+             "       * POWER(SIN(({1} - y)*pi()/180/2),2))) AS distance "
+             "   FROM sf_bike_parking_base ) distances "
              "WHERE distance <= 0.25 ").format(lat, long)
     print query
     query_result = conn.execute(query)
     distances = {}
     for i in query_result.cursor.fetchall():
-      distances[str(i[0])] = float(i[1])
-    query_scores = ("SELECT address, score FROM roiana_scores WHERE address IN (%s)" % str(distances.keys()).strip('[]'))
+      distances[(str(i[0]), str(i[1])] = float(i[2])
+    query_scores = ("SELECT address, location_name, score FROM roiana_scores WHERE address IN (%s)" % str(distances.keys()).strip('[]'))
     print query_scores
     query_scores_result = conn.execute(query_scores)
     scores = {}
     for i in query_scores_result.cursor.fetchall():
-      scores[str(i[0])] = float(i[1])
+      scores[(str(i[0]), str(i[1])] = float(i[2])
     # Populate missing scores to 0.
-    for address in distances.keys():
-      if address not in scores.keys():
-        scores[address] = 0
+    for address_cat in distances.keys():
+      if address_cat not in scores.keys():
+        scores[address_cat] = 0
     # Sort locations by score.
     sorted_scores = sorted(scores.items(), key=lambda x:x[1])
     results = []
     # Get top 5 locations ordered by score.
     for i in range(6):
-      address = sorted_scores[i][0]
+      address_cat = sorted_scores[i][0]
       score = sorted_scores[i][1]
       distance = distances[address]
-      results.append(("Address: {0}".format(address), "Distance: {0:.2f}".format(distances[address]), "Score: {0:.2f}".format(scores[address])))
+      results.append(("Address: {0}".format(address_cat[0]),
+                      "Location name: {0}".format(address_cat[1]),
+                      "Distance: {0:.2f}".format(distances[address]),
+                      "Score: {0:.2f}".format(scores[address])))
     result = {"Recommended spots": results}
     print result
     conn.close()

@@ -16,7 +16,7 @@ print "Loading bike parking data."
 lines = sc.textFile('file:///home/w205/final_project/W205-Final-Project/data/sf_bike_data.csv')
 # Iterates through each line, removes non-ascii characters, and splits on columns (ignores commas in quotes).
 parts = lines.map(lambda l: csv.reader(io.StringIO(re.sub(r'[^\x00-\x7f]',r'', l))).next())
-bikeParkingData = parts.map(lambda p: (p[0], p[1], p[2], int(p[3]), int(p[4]), p[5], p[6], p[7], float(p[8]), float(p[9]))).take(2)
+bikeParkingData = parts.map(lambda p: (p[0], p[1], p[2], int(p[3]), int(p[4]), p[5], p[6], p[7], float(p[8]), float(p[9])))
 fields = [StructField('address', StringType(), True),
           StructField('location_name', StringType(), True),
           StructField('street_name', StringType(), True),
@@ -28,8 +28,9 @@ fields = [StructField('address', StringType(), True),
           StructField('lat', FloatType(), True),
           StructField('long', FloatType(), True)]
 schema = StructType(fields)
-bpDF = sqlContext.createDataFrame(bikeParkingData, schema)
-bpDF.registerTempTable('bike_parking_data')
+bikeParkingDF = sqlContext.createDataFrame(bikeParkingData, schema) 
+filteredBikeParkingDF = bikeParkingDF.filter("spaces BETWEEN 14 AND 20")
+filteredBikeParkingDF.registerTempTable('bike_parking_data')
 results = sqlContext.sql('SELECT * FROM bike_parking_data')
 results.show()
 
@@ -51,8 +52,9 @@ crimeFields = [StructField('incident_num', StringType(), True),
           StructField('lat', FloatType(), True)]
 crimeSchema = StructType(crimeFields)
 crimeDF = sqlContext.createDataFrame(crimeData, crimeSchema)
-# Filter crime data for only vehicle theft, larceny/theft and robbery
-filteredCrimeDF = crimeDF.filter("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP(date, 'MM/dd/yyyy'), 'yyyy-MM-dd')) > cast('2013-01-01' AS date) AND category IN ('VEHICLE THEFT', 'LARCENY/THEFT', 'ROBBERY')")
+# Filter crime data for only vehicle theft, larceny/theft and robbery over last 3 years.
+filteredCrimeDF = crimeDF.filter("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP(date, 'MM/dd/yyyy'), 'yyyy-MM-dd')) > cast('2013-01-01' AS date) "
+				 "AND category IN ('VEHICLE THEFT', 'LARCENY/THEFT', 'ROBBERY')")
 filteredCrimeDF.registerTempTable('crime_data')
 results = sqlContext.sql('SELECT * FROM crime_data')
 results.show()
@@ -60,6 +62,7 @@ results.show()
 # Create data frame of bike parking .1 mile search boundaries.
 parkingCrimeAreasDF = sqlContext.sql('SELECT '
   				     'address, '
+				     'location_name, '
   				     'lat-(.1/69) as min_lat, '
   				     'lat+(.1/69) as max_lat, '
   				     'long-(.1/abs(cos(lat*pi()/180)*69)) as min_long, '
@@ -72,6 +75,7 @@ parkingCrimeAreasDF.show()
 print "Calculating Cartesian product"
 cart = sqlContext.sql('SELECT '
                       'p.address as address, '
+                      'p.location_name, '
 		      'category, '
 		      'lat, long, '
 		      'min_lat, max_lat, '
@@ -86,8 +90,11 @@ filteredCart.show()
 
 # Group data by bikestop to get total number of crimes.
 print "Reducing data"
-reducedFields = [StructField('address,category', StringType(), True),
-          	 StructField('count', IntegerType(), True)]
+reducedFields = [StructField('address', StringType(), True),
+                 StructField('location_name', StringType(), True),
+                 StructField('larceny_count', IntegerType(), True),
+       		 StructField('robbery_count', IntegerType(), True),
+          	 StructField('vehicle_theft_count', IntegerType(), True)]
 reducedSchema = StructType(reducedFields)
 #reducedDataDict = filteredCart.rdd.map(lambda row: (row[0], row)).countByKey()
 # Groups data by address and category. Currently commented out.
@@ -102,13 +109,18 @@ def GetCounts(category):
     return (0, 0, 1)
   else:
     return (0, 0, 0)
-reducedDataDict = filteredCart.rdd.map(lambda row: (row[0], GetCounts(row[1]))).reduceByKey(lambda x,y: (x[0] + y[0], x[1] + y[1], x[2] + y[2]))
-print reducedDataDict.collect()
+reducedData = filteredCart.rdd.map(lambda row: ((row[0], '"'+row[1]+'"'), GetCounts(row[2]))) \
+                                  .reduceByKey(lambda x,y: (x[0] + y[0], x[1] + y[1], x[2] + y[2])) \
+                                  .map(lambda x: (x[0][0], x[0][1], x[1][0], x[1][1], x[1][2]))
+#print reducedDataDict.collect()
 # Convert to dataframe to easily view result.
 #reducedData = sc.parallelize(reducedDataDict.items())
-#reducedDF = sqlContext.createDataFrame(reducedData, reducedSchema)
-#reducedDF.show()
+reducedDF = sqlContext.createDataFrame(reducedData, reducedSchema)
+reducedDF.show()
 
 # Output data to a csv file.
 #reducedDF.toPandas().to_csv('file:///home/w205/final_project/W205-Final-Project/data/sf_bike_parking_scores.csv')
-#reducedData.map(lambda x: ",".join(map(str, x))).coalesce(1).saveAsTextFile('file:///home/w205/final_project/W205-Final-Project/data/sf_parking_scores')
+#reducedDF.write.format('com.databricks.spark.csv').save('sf_parking_scores.csv')
+reducedData.map(lambda x: ",".join(map(str, x))) \
+           .coalesce(1) \
+           .saveAsTextFile('file:///home/w205/final_project/W205-Final-Project/data/sf_parking_scores')
