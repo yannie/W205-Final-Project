@@ -11,7 +11,7 @@ WITH SERDEPROPERTIES ( "separatorChar" = ",",
 "escapeChar" = '\\'
 )
 STORED AS TEXTFILE
-LOCATION '/user/w205/sfcrime_score';
+LOCATION '/user/w205/crimefin';
 
 DROP TABLE C_GROUP;
 CREATE TABLE C_GROUP AS
