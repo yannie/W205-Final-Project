@@ -16,11 +16,11 @@ LOCATION '/user/w205/finscore';
 DROP TABLE C_GROUP;
 CREATE TABLE C_GROUP AS
 SELECT Address, Location,
-SUM(Larceny) AS LARC,
-SUM(Robbery) AS ROB,
-SUM(Vehicle) as VEH
+AVG(Larceny) AS LARC,
+AVG(Robbery) AS ROB,
+AVG(Vehicle) as VEH
 FROM c_test
-GROUP BY Address, Location;
+GROUP BY ADDRESS, LOCATION;
 
 DROP TABLE C_RANK;
 CREATE TABLE C_RANK AS
