@@ -4,8 +4,9 @@ from sqlalchemy import *
 from sqlalchemy.engine import create_engine
 from sqlalchemy.schema import *
 import os
+import re
 
-engine = create_engine('hive://w205@54.209.246.57:10000/default')
+engine = create_engine('hive://w205@52.90.221.236:10000/default')
 app = Flask(__name__)
 api = Api(app)
 
@@ -45,36 +46,10 @@ class BikeStops(Resource):
     conn.close()
     return result
 
-class BikeStops2(Resource):
-  def get(self):
-    parser = reqparse.RequestParser()
-    parser.add_argument('lat', type=float)
-    parser.add_argument('long', type=float)
-    args = parser.parse_args()
-    lat = args['lat']
-    long = args['long']
-    print "lat: {0}, long: {1}".format(lat,long)
+def RemoveNonAsciiChar(text):
+  return str(re.sub(r'[^\x00-\x7F]',r'', text))
 
-    conn = engine.connect()
-    query = ("SELECT "
-             "b.address, "
-             "3956*2*ASIN(SQRT(POWER(SIN((b.x - abs({0})) * pi()/180/2), 2) "
-             "+ COS(b.x*pi()/180)*COS(abs({0})*pi()/180) "
-             "* POWER(SIN((b.y - {1})*pi()/180/2),2))) as distance "
-             "FROM sf_bike_parking_base AS b "
-             "WHERE "
-             "b.x BETWEEN {0}-(1/69) AND {0}+(1/69) "
-             "AND b.y BETWEEN {1}-(1/abs(cos({0}*pi()/180)*69)) AND {1}+(1/abs(cos({0}*pi()/180)*69)) "
-             "ORDER BY distance "
-             "LIMIT 10 ").format(lat, long)
-    print query
-    query_result = conn.execute(query)
-    result = {"bike parking spot, distance": [(i[0], i[1]) for i in query_result.cursor.fetchall()]}
-    print result
-    conn.close()
-    return result
-
-class BikeStops3(Resource):
+class SFBikeStops(Resource):
   def get(self):
     parser = reqparse.RequestParser()
     parser.add_argument('lat', type=float)
@@ -95,30 +70,34 @@ class BikeStops3(Resource):
     print query
     query_result = conn.execute(query)
     distances = {}
+    addresses = []
+    locations = []
     for i in query_result.cursor.fetchall():
-      distances[(str(i[0]), str(i[1])] = float(i[2])
-    query_scores = ("SELECT address, location_name, score FROM roiana_scores WHERE address IN (%s)" % str(distances.keys()).strip('[]'))
+      addresses.append(RemoveNonAsciiChar(i[0]))
+      locations.append(RemoveNonAsciiChar(i[1]))
+      distances[",".join((RemoveNonAsciiChar(i[0]), RemoveNonAsciiChar(i[1])))] = float(i[2])
+    query_scores = ("SELECT address, location, score FROM sf_score WHERE address IN ({0}) AND location IN ({1})").format(str(addresses).strip('[]'), str(locations).strip('[]'))
     print query_scores
     query_scores_result = conn.execute(query_scores)
     scores = {}
     for i in query_scores_result.cursor.fetchall():
-      scores[(str(i[0]), str(i[1])] = float(i[2])
-    # Populate missing scores to 0.
-    for address_cat in distances.keys():
-      if address_cat not in scores.keys():
-        scores[address_cat] = 0
+      scores[",".join((RemoveNonAsciiChar(i[0]), RemoveNonAsciiChar(i[1])))] = float(i[2])
     # Sort locations by score.
-    sorted_scores = sorted(scores.items(), key=lambda x:x[1])
+    sorted_scores = sorted(scores.items(), key=lambda x:x[1], reverse=True)
     results = []
-    # Get top 5 locations ordered by score.
-    for i in range(6):
-      address_cat = sorted_scores[i][0]
+    max_range = min(5, len(sorted_scores))
+    # Get top 5 locations ordered by score desc.
+    for i in range(max_range):
+      address_loc = sorted_scores[i][0]
+      address_loc_tup = address_loc.split(",")
+      address = address_loc_tup[0]
+      location = address_loc_tup[1]
       score = sorted_scores[i][1]
-      distance = distances[address]
-      results.append(("Address: {0}".format(address_cat[0]),
-                      "Location name: {0}".format(address_cat[1]),
-                      "Distance: {0:.2f}".format(distances[address]),
-                      "Score: {0:.2f}".format(scores[address])))
+      distance = distances[address_loc]
+      results.append(("Address: {0}".format(address),
+                      "Location name: {0}".format(location),
+                      "Distance: {0:.2f}".format(distance),
+                      "Score: {0:.2f}".format(score)))
     result = {"Recommended spots": results}
     print result
     conn.close()
@@ -126,8 +105,7 @@ class BikeStops3(Resource):
 
 api.add_resource(Crimes, "/crimes/<int:num>")
 api.add_resource(BikeStops, "/bikestops", endpoint='bikestops')
-api.add_resource(BikeStops2, "/bikestops2", endpoint='bikestops2')
-api.add_resource(BikeStops3, "/bikestops3", endpoint='bikestops3')
+api.add_resource(SFBikeStops, "/sf", endpoint='sf')
 
 if __name__ == '__main__':
 	test_con = engine.connect()

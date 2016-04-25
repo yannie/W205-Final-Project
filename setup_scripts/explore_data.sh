@@ -27,7 +27,7 @@ echo "Loading data into HDFS."
 hdfs dfs -mkdir /user/w205/sfcrime
 hdfs dfs -put ../../data/sf_crime_data.csv /user/w205/sfcrime
 hdfs dfs -mkdir /user/w205/sfbike
-hdfs dfs -put ../../data/sf_bike_data.csv /user/w205/sfbike
+hdfs dfs -put ../data/sf_bike_data.csv /user/w205/sfbike
 
 echo "Loading Chicago data sets."
 if [ -f "../../data/chi_crime_data.csv" ]; then
@@ -53,3 +53,11 @@ rm ../data/chi_bike_data_raw.csv
 echo "Creating Hive tables."
 hive -f create_tables.sql
 
+# Load and calculate bike parking scores.
+hdfs dfs -mkdir /user/w205/sfscore
+hdfs dfs -put ../data/sf_parking_scores.csv /user/w205/sfscore
+hdfs dfs -mkdir /user/w205/chiscore
+hdfs dfs -put ../data/chi_parking_scores.csv /user/w205/chiscore
+
+hive -f calculate_score_sf.sql
+hive -f calculate_score_chi.sql
