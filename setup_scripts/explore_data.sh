@@ -50,8 +50,15 @@ rm ../../data/chi_crime_data_raw.csv
 tail -n +2 ../data/chi_bike_data_raw.csv > ../data/chi_bike_data.csv
 rm ../data/chi_bike_data_raw.csv
 
+echo "Loading data into HDFS."
+hdfs dfs -mkdir /user/w205/chicrime
+hdfs dfs -put ../../data/chi_crime_data.csv /user/w205/chicrime
+hdfs dfs -mkdir /user/w205/chibike
+hdfs dfs -put ../data/chi_bike_data.csv /user/w205/chibike
+
 echo "Creating Hive tables."
 hive -f create_tables.sql
+hive -f create_chi_tables.sql
 
 # Load and calculate bike parking scores.
 hdfs dfs -mkdir /user/w205/sfscore
