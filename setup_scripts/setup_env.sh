@@ -26,5 +26,3 @@ sudo yum install gcc-c++ python-devel.x86_64 cyrus-sasl-devel.x86_64
 /opt/py27/bin/pip install -r /home/w205/final_project/W205-Final-Project/setup_scripts/requirements.txt
 pip install PyHive
 
-#Install other libraries
-pip install pandas
