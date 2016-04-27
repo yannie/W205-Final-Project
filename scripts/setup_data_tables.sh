@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to load download raw datasets and load final scores into Hive.
 
 echo "Loading San Francisco data sets."
 mkdir ../../data
