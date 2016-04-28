@@ -26,7 +26,8 @@ fields = [StructField('rack_id', IntegerType(), True),
           StructField('long', FloatType(), True)]
 schema = StructType(fields)
 bikeParkingDF = sqlContext.createDataFrame(bikeParkingData, schema)
-filteredBikeParkingDF = bikeParkingDF.filter("rack_id NOT IN (651, 1409) AND tot_install BETWEEN 6 and 7")
+# Edit this line to limit number of bike racks to compute crime data for.
+filteredBikeParkingDF = bikeParkingDF.filter("tot_install BETWEEN 20 and 21")
 filteredBikeParkingDF.registerTempTable('c_bike_parking_data')
 results = sqlContext.sql('SELECT * FROM c_bike_parking_data')
 results.show()

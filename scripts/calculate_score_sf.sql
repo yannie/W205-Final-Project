@@ -1,4 +1,24 @@
-#Calculating safety scores for bike locations in San Francisco
+--Calculating safety scores for bike locations in San Francisco
+DROP TABLE sf_bike_parking_base;
+CREATE EXTERNAL TABLE sf_bike_parking_base (
+  address string,
+  location_name string,
+  street_name string,
+  racks int,
+  spaces int,
+  placement string,
+  mo_installed int,
+  yr_installed int,
+  X int,
+  Y int
+) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ( "separatorChar" = ",",
+"quoteChar" = '"',
+"escapeChar" = '\\'
+)
+STORED AS TEXTFILE
+LOCATION '/user/w205/sfbike';
+
 DROP TABLE sf_agg;
 CREATE EXTERNAL TABLE sf_agg (
   address string,

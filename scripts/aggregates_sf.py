@@ -29,7 +29,8 @@ fields = [StructField('address', StringType(), True),
           StructField('long', FloatType(), True)]
 schema = StructType(fields)
 bikeParkingDF = sqlContext.createDataFrame(bikeParkingData, schema) 
-filteredBikeParkingDF = bikeParkingDF.filter("spaces BETWEEN 14 AND 20")
+# Edit this line to filter the number of bike racks to compute crime data for.
+filteredBikeParkingDF = bikeParkingDF.filter("spaces > 100")
 filteredBikeParkingDF.registerTempTable('bike_parking_data')
 results = sqlContext.sql('SELECT * FROM bike_parking_data')
 results.show()
