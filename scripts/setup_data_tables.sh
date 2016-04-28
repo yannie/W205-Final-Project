@@ -59,7 +59,6 @@ hdfs dfs -put ../data/chi_bike_data.csv /user/w205/chibike
 
 echo "Creating Hive tables."
 hive -f create_sf_tables.sql
-hive -f create_chi_tables.sql
 
 # Load and calculate bike parking scores.
 ./upload_scores.sh
