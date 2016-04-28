@@ -1,3 +1,4 @@
+#Calculating safety scores for bike locations in Chicago
 DROP TABLE chi_agg;
 CREATE EXTERNAL TABLE chi_agg (
   address string,
