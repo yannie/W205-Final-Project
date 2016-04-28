@@ -1,4 +1,5 @@
 ## Bike Theft Application for Berkeley W205 Final Project.
+Authors: Annie Lee and Roiana Reid
 
 #### These are instructions on how to used the code provided in this repository to replicate our analysis.
 
