@@ -19,7 +19,7 @@
 
 2. Run "aggregates_sf.py" to load the San Francisco crime and bike parking installments datasets into tables, and calculate ranks of each category of crime ('VEHICLE THEFT', 'LARCENY/THEFT', 'ROBBERY') for each bike rack.
 
-3. Run "Upload_scores.sh" to upload the aggregated rank data in Haddop and to run the scripts used to calculate the safety score for each bike rack location analyzed in Chicago and San Francisco. 
+3. Run "Upload_scores.sh" to upload the aggregated rank data in Hadoop and to run the scripts used to calculate the safety score for each bike rack location analyzed in Chicago and San Francisco. 
 
 #### Serving Component with Real Time Processing
 
