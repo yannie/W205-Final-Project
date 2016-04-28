@@ -1,3 +1,4 @@
+#Calculating safety scores for bike locations in San Francisco
 DROP TABLE sf_agg;
 CREATE EXTERNAL TABLE sf_agg (
   address string,
