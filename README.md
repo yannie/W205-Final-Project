@@ -1,4 +1,3 @@
-# W205-Final-Project
 ## Bike Theft Application for Berkeley W205 Final Project.
 
 #### These are instructions on how to used the code provided in this repository to replicate our analysis.
@@ -47,7 +46,7 @@ $ hive --service hiveserver2
 $ python app.py
 ```
 
-3. Issue requests against the REST API with the following commands:  
+3. Issue requests against the REST API with the following example commands by supplying the latitude and longitude:  
 ```
 $ curl http://ec2-xx-xxx-xxx-xxx.compute-1.amazonaws.com:8080/sf?lat=37.7749290&long=-122.4194160
 $ curl http://ec2-xx-xxx-xxx-xxx.compute-1.amazonaws.com:8080/chi?lat=41.8781140&long=-87.6297980
