@@ -9,14 +9,14 @@ Authors: Annie Lee and Roiana Reid
 
 ##### Data downloading, cleaning and exploration
 
-1. Switch to the w205 user and activate the py27 environment with the following command:  
+2. Switch to the w205 user and activate the py27 environment with the following command:  
 ```
 $ source /opt/py27environment/bin/activate
 ```
 
-2. Run the "setup_data_tables.sh" script from the scripts directory to download the raw crime and bike parking datasets, format the data, load pre-aggregated data and load the final scores into Hive.
+3. Run the "setup_data_tables.sh" script from the scripts directory to download the raw crime and bike parking datasets, format the data, load pre-aggregated data and load the final scores into Hive. This runs the full setup necessary for analysis and preprocessing of data and may take awhile to run. If you would like to skip this step and use our precomputed data provided in the Github, there is a shortcut script available called "quick_data_setup.sh" that will load all the necessary data you need for the application into Hive and allow you to skip straight to the "Serving Component with Real Time Processing" section to run the application.
 
-3. This step is optional and only necessary if you want to explore the San Francisco crime and bike parking datasets. Run the "explore_sf_data.sql" using the following command:
+4. This step is optional and only necessary if you want to explore the San Francisco crime and bike parking datasets. Run the "explore_sf_data.sql" using the following command:
 ```
 $ hive -f explore_sf_data.sql
 ```
