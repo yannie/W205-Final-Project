@@ -7,7 +7,7 @@
 
 + Bike parking safety scores are available for two cities, Chicago and San Francisco.
 
-+ The crimes which were accounted for are larceny, robbery and vehicle theft.
++ The crimes accounted for are larceny, robbery and vehicle theft.
 
 + For Chicago, scores are available for bike parking racks with at least five parking spaces.
 
