@@ -11,7 +11,7 @@ import os
 import re
 
 # Update this to point to public ip address of ec2 instance.
-engine = create_engine('hive://w205@52.201.230.153:10000/default')
+engine = create_engine('hive://w205@54.85.155.200:10000/default')
 app = Flask(__name__)
 api = Api(app)
 
