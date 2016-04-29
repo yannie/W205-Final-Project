@@ -5,7 +5,7 @@ Authors: Annie Lee and Roiana Reid
 
 ##### Setting up the programming environment:
 
-1. Run the "setup_env.sh" script from the scripts directory to install Hadoop, Spark SQL and Postgres, set up the Python 2.7 virtual environment and install the necessary Python packages.
+1. Run the "setup_env.sh" script as root user to install Hadoop, Spark SQL and Postgres, set up the Python 2.7 virtual environment and install the necessary Python packages.
 
 ##### Data downloading, cleaning and exploration
 
